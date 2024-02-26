@@ -1,0 +1,23 @@
+{
+  "name": "web-crawler",
+  "version": "1.0.0",
+  "description": "boot.dev http course project",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codi-andre/web-crawler.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/codi-andre/web-crawler/issues"
+  },
+  "homepage": "https://github.com/codi-andre/web-crawler#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
