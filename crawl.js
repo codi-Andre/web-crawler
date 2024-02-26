@@ -1,7 +1,23 @@
 const { JSDOM } = require("jsdom")
 
-async function crawlPage(currentURL) {
+async function crawlPage(baseURL, currentURL, pages) {
+  const baseUrlObj = new URL(baseURL)
+  const currentUrlObj = new URL(currentURL)
+
+  if (baseUrlObj.hostname !== currentUrlObj.hostname) {
+    return pages
+  }
+
+  const normalizedCurrentUrl = normalizeUrl(currentURL)
+  if (pages[normalizedCurrentUrl] > 0) {
+    pages[normalizedCurrentUrl]++
+    return pages
+  }
+
+  pages[normalizedCurrentUrl] = 1
+
   console.log(`Actively crawling: ${currentURL}`)
+
   try {
     const resp = await fetch(currentURL)
 
@@ -9,7 +25,7 @@ async function crawlPage(currentURL) {
       console.log(
         `Error in fetch with status code: ${resp.status}, on page: ${currentURL}`
       )
-      return
+      return pages
     }
 
     const contentType = resp.headers.get("content-type")
@@ -17,13 +33,20 @@ async function crawlPage(currentURL) {
       console.log(
         `non html response, content type: ${contentType}, on page: ${currentURL}`
       )
-      return
+      return pages
     }
 
-    console.log(await resp.text())
+    const htmlBody = await resp.text()
+    const nextURLs = getUrlsFromHtml(htmlBody, baseURL)
+
+    for (const nextUrl of nextURLs) {
+      pages = await crawlPage(baseURL, nextUrl, pages)
+    }
   } catch (error) {
     console.log(`Error in fetch: ${error.message}, on page: ${currentURL}`)
   }
+
+  return pages
 }
 
 function getUrlsFromHtml(htmlBody, baseUrl) {
@@ -53,7 +76,7 @@ function getUrlsFromHtml(htmlBody, baseUrl) {
   return urls
 }
 
-function urlNormalize(urlString) {
+function normalizeUrl(urlString) {
   const urlObj = new URL(urlString)
   const hostPath = `${urlObj.hostname}${urlObj.pathname}`
 
@@ -67,5 +90,5 @@ function urlNormalize(urlString) {
 module.exports = {
   crawlPage,
   getUrlsFromHtml,
-  urlNormalize
+  normalizeUrl
 }
